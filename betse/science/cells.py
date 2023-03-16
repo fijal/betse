@@ -428,6 +428,10 @@ class Cells(object):
         M_sum_mems = state.pop('M_sum_mems')
         M_sum_mems_inv = state.pop('M_sum_mems_inv')
         self.__dict__.update(state)
+
+        self.setup_converters(M_sum_mems, M_sum_mems_inv)
+
+    def setup_converters(self, M_sum_mems, M_sum_mems_inv):
         max_no = self.check_contiguous_grid(M_sum_mems)
         if max_no != -1:
             cell_no = M_sum_mems.shape[0]
@@ -1350,19 +1354,19 @@ class Cells(object):
         #     self.matrixMap2Verts[i, indices[1]] = 1/2
 
         # matrix for summing property on membranes for each cell and a count of number of mems per cell:---------------
-        xxx
-        self.M_sum_mems = np.zeros((len(self.cell_i),len(self.mem_i)))
+        M_sum_mems = np.zeros((len(self.cell_i),len(self.mem_i)))
         self.num_mems = []
 
         for i, inds in enumerate(self.cell_to_mems):
             n = 0
             for j in inds:
-                self.M_sum_mems[i,j] = 1
+                M_sum_mems[i,j] = 1
                 n = n+1
 
             self.num_mems.append(n)
 
-        self.M_sum_mems_inv = np.linalg.pinv(self.M_sum_mems)  # matrix inverse of M_sum_mems for div-free cell calcs
+        M_sum_mems_inv = np.linalg.pinv(M_sum_mems)  # matrix inverse of M_sum_mems for div-free cell calcs
+        self.setup_converters(M_sum_mems, M_sum_mems_inv)
         self.num_mems = np.asarray(self.num_mems)  # number of membranes per cell
         self.mem_distance = p.cell_space + 2*p.tm # distance between two adjacent intracellluar spaces
         self.cell_number = self.cell_centres.shape[0]
@@ -1439,7 +1443,7 @@ class Cells(object):
         self.mem_vol = (1 / 2) * self.R_rads * self.mem_sa
 
         # calaculate cell volume by suming up the large pies:
-        self.cell_vol = np.dot(self.M_sum_mems, self.mem_vol)
+        self.cell_vol = self.convert_mems_to_cells(self.mem_vol)
 
         self.R = ((3 / 4) * (self.cell_vol / math.pi)) ** (1 / 3)  # effective radius of each cell
 
