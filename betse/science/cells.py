@@ -392,8 +392,64 @@ class Cells(object):
         p : betse.science.parameters.Parameters
             Current simulation configuration.
         '''
-
         pass
+
+    def check_contiguous_grid(self, grid):
+        """ This returns True, but should check if each row in M_mem_sums
+        is a list of 0s, then list of 1s, then list of 0s
+        """
+        return 6
+        # XXX the logic below is broken, write it down
+        for x in range(grid.shape[0]):
+            y = 0
+            while grid[x, y] == 0:
+                y += 1
+                if y == grid.shape[1]:
+                    return -1
+            c = 0
+            while grid[x, y] == 1:
+                y += 1
+                c += 1
+                if y == grid.shape[1]:
+                    return c
+            while grid[x, y] == 0:
+                y += 1
+                if y == grid.shape[1]:
+                    return c                
+            return -1
+
+    def convert_mems_to_cells(self, mems):
+        return np.dot(self._M_sum_mems, mems)
+
+    def convert_cells_to_mems(self, cells):
+        return np.dot(self._M_sum_mems_inv, cells)
+
+    def __setstate__(self, state):
+        M_sum_mems = state.pop('M_sum_mems')
+        M_sum_mems_inv = state.pop('M_sum_mems_inv')
+        self.__dict__.update(state)
+        max_no = self.check_contiguous_grid(M_sum_mems)
+        if max_no != -1:
+            cell_no = M_sum_mems.shape[0]
+            self._M_sum_helper = np.zeros((cell_no, max_no), dtype="int64")
+            for i in range(cell_no):
+                idx_ar = np.where(M_sum_mems[i] == 1)[0]
+                self._M_sum_helper[i, :len(idx_ar)] = idx_ar
+                self._M_sum_helper[i, len(idx_ar):] = -1
+            self._M_sum_inv_helper = np.where(M_sum_mems_inv != 0)[1]
+            self._M_sum_inv_multiplier = M_sum_mems_inv[M_sum_mems_inv != 0]
+
+            def convert_mems_to_cells(mems):
+                return np.sum(np.concatenate((mems, [0]))[self._M_sum_helper], axis=1)
+
+            def convert_cells_to_mems(cells):
+                return cells[self._M_sum_inv_helper] * self._M_sum_inv_multiplier
+
+            self.convert_mems_to_cells = convert_mems_to_cells
+            self.convert_cells_to_mems = convert_cells_to_mems
+        else:
+            self._M_sum_mems = M_sum_mems
+            self._M_sum_mems_inv = M_sum_mems_inv
 
     # ..................{ MAKERS                            }..................
     MAKE_WORLD_PROGRESS_TOTAL = 5
@@ -1294,6 +1350,7 @@ class Cells(object):
         #     self.matrixMap2Verts[i, indices[1]] = 1/2
 
         # matrix for summing property on membranes for each cell and a count of number of mems per cell:---------------
+        xxx
         self.M_sum_mems = np.zeros((len(self.cell_i),len(self.mem_i)))
         self.num_mems = []
 
@@ -2393,7 +2450,7 @@ class Cells(object):
         if cbound is True: # close the boundary (zero-flux boundary condition)
             gSn[self.bflags_mems] = 0.0
 
-        divS = np.dot(self.M_sum_mems, gSn * self.mem_sa) / self.cell_vol
+        divS = self.convert_mems_to_cells(gSn * self.mem_sa) / self.cell_vol
 
         return divS
 
@@ -2614,7 +2671,7 @@ class Cells(object):
     def single_cell_div_free(self, uxo, uyo):
         # now, make the transport field divergence-free wrt individual cells (divergence-free is the way to be!
         divU = self.div(uxo, uyo, cbound=False)  # divergence of the field at each membrane
-        Pi = np.dot(self.M_sum_mems_inv, divU) * (
+        Pi = self.convert_cells_to_mems(divU) * (
             self.cell_vol[self.mem_to_cells] / self.mem_sa)  # 'pressure" field to create div-free case
 
         ux = uxo - Pi * self.mem_vects_flat[:, 2]  # corrected vector at the membrane

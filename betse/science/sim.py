@@ -1440,7 +1440,7 @@ class Simulator(object):
         self.cbar_all = np.mean([v for k, v in self.cbar_dic.items()])
         self.cbar_sum = np.sum([v.mean() for k, v in self.cbar_dic.items()])
 
-        self.G_Leak = (np.dot(cells.M_sum_mems, sum(sigma_mem)*cells.mem_sa)/cells.cell_sa)*self.geo_conv
+        self.G_Leak = (cells.convert_mems_to_cells(sum(sigma_mem)*cells.mem_sa)/cells.cell_sa)*self.geo_conv
 
         # get the average gap junction conductivity:
         # self.G_gj = sum(sigma_gj)*self.geo_conv*(cells.mem_sa.mean()/cells.cell_sa.mean())
@@ -1547,9 +1547,9 @@ class Simulator(object):
             else:
                 self.gjopen = self.gj_block*np.ones(len(cells.mem_i))*cells.gj_default_weights
 
-            Jgj = self.G_gj*np.dot(cells.M_sum_mems, self.vgj)
+            Jgj = self.G_gj*cells.convert_mems_to_cells(self.vgj)
 
-            Jmem = np.dot(cells.M_sum_mems, self.extra_J_mem*cells.mem_sa)/cells.cell_sa
+            Jmem = cells.convert_mems_to_cells(self.extra_J_mem*cells.mem_sa)/cells.cell_sa
 
             self.vm_ave += p.dt*(1/p.cm)*(Jgj - Jmem - self.G_Leak*(self.vm_ave - self.E_Leak))
 
@@ -1569,8 +1569,8 @@ class Simulator(object):
             Jcy = self.Jn * cells.mem_vects_flat[:, 3]
 
             # average intracellular current to cell centres
-            self.J_cell_x = np.dot(cells.M_sum_mems, Jcx * cells.mem_sa) / cells.cell_sa
-            self.J_cell_y = np.dot(cells.M_sum_mems, Jcy * cells.mem_sa) / cells.cell_sa
+            self.J_cell_x = cells.convert_mems_to_cells(Jcx * cells.mem_sa) / cells.cell_sa
+            self.J_cell_y = cells.convert_mems_to_cells(Jcy * cells.mem_sa) / cells.cell_sa
 
             # intracellular electric field:
             self.E_cell_x = self.J_cell_x / (0.1 * self.sigma_cell)
@@ -2035,7 +2035,7 @@ class Simulator(object):
 
             # average vm:
             # self.vm_ave = np.dot(cells.M_sum_mems, self.vm*cells.mem_sa)/cells.cell_sa
-            self.vm_ave = np.dot(cells.M_sum_mems, self.vm) / cells.num_mems
+            self.vm_ave = cells.convert_mems_to_cells(self.vm) / cells.num_mems
 
             self.E_cell_x = self.J_cell_x/(self.sigma_cell)
             self.E_cell_y = self.J_cell_y/(self.sigma_cell)
@@ -2061,7 +2061,7 @@ class Simulator(object):
                        ((p.dt*self.sigma_cell[cells.mem_to_cells])/(p.cm*cells.R_rads)))
 
             # average vm:
-            self.vm_ave = np.dot(cells.M_sum_mems, self.vm) / cells.num_mems
+            self.vm_ave = cells.convert_mems_to_cells(self.vm) / cells.num_mems
 
             # True cell radii:
             Rcells = cells.R_rads*(p.true_cell_size/p.cell_radius)
@@ -2072,8 +2072,8 @@ class Simulator(object):
             gEx = -gE * cells.mem_vects_flat[:, 2]
             gEy = -gE * cells.mem_vects_flat[:, 3]
 
-            self.E_cell_x = np.dot(cells.M_sum_mems, gEx * cells.mem_sa) / cells.cell_sa
-            self.E_cell_y = np.dot(cells.M_sum_mems, gEy * cells.mem_sa) / cells.cell_sa
+            self.E_cell_x = cells.convert_mems_to_cells(gEx * cells.mem_sa) / cells.cell_sa
+            self.E_cell_y = cells.convert_mems_to_cells(gEy * cells.mem_sa) / cells.cell_sa
 
             # calculate electric field in cells using net intracellular current and cytosol conductivity:
             self.Emc = (self.E_cell_x[cells.mem_to_cells] * cells.mem_vects_flat[:, 2] +
@@ -2102,8 +2102,8 @@ class Simulator(object):
                 ignoreECM=False,
             )
 
-            delta_cgj = np.dot(
-                cells.M_sum_mems, -f_gj_i*cells.mem_sa) / cells.cell_vol
+            delta_cgj = cells.convert_mems_to_cells(
+                -f_gj_i*cells.mem_sa) / cells.cell_vol
 
             self.cc_cells[i] +=  p.dt*delta_cgj
 

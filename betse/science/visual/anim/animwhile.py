@@ -140,7 +140,7 @@ class AnimCellsWhileSolving(AnimCellsABC):
         #Cells.map_membranes_midpoint_to_cells_centre() method instead.
 
         # Vmem averaged over cell centres.
-        vm_o = np.dot(self._phase.cells.M_sum_mems, self._phase.sim.vm) / (
+        vm_o = self._phase.cells.convert_mems_to_cells(self._phase.sim.vm) / (
             self._phase.cells.num_mems)
 
         # self._cell_time_series = self.sim.vm_time

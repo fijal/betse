@@ -544,16 +544,16 @@ def ghk_calculator(sim, cells, p):
         ion_type = np.sign(z)
 
         # average values from membranes or environment to cell centres:
-        Dm = np.dot(cells.M_sum_mems, sim.Dm_cells[i]) / cells.num_mems
+        Dm = cells.convert_mems_to_cells(sim.Dm_cells[i]) / cells.num_mems
         conc_cells = sim.cc_cells[i]
 
         if p.is_ecm is True:
             # average entities from membranes to the cell centres:
-            conc_env = np.dot(cells.M_sum_mems, sim.cc_env[i][cells.map_mem2ecm]) / cells.num_mems
+            conc_env = cells.convert_mems_to_cells(sim.cc_env[i][cells.map_mem2ecm]) / cells.num_mems
 
         else:
 
-            conc_env = np.dot(cells.M_sum_mems, sim.cc_env[i]) / cells.num_mems
+            conc_env = cells.convert_mems_to_cells(sim.cc_env[i]) / cells.num_mems
 
         if ion_type == -1:
 
@@ -582,15 +582,15 @@ def ghk_calculator(sim, cells, p):
 
                 if p.is_ecm is True:
                     # average entities from membranes to the cell centres:
-                    conc_env = np.dot(cells.M_sum_mems, sim.cc_env[ion_i][cells.map_mem2ecm]) / cells.num_mems
+                    conc_env = cells.convert_mems_to_cells(sim.cc_env[ion_i][cells.map_mem2ecm]) / cells.num_mems
 
                 else:
 
-                    conc_env = np.dot(cells.M_sum_mems, sim.cc_env[ion_i]) / cells.num_mems
+                    conc_env = cells.convert_mems_to_cells(sim.cc_env[ion_i]) / cells.num_mems
 
                 if obj.channel_core.DChan is not None:
                     Dmo = obj.channel_core.DChan*relP
-                    Dm = np.dot(cells.M_sum_mems, Dmo) / cells.num_mems
+                    Dm = cells.convert_mems_to_cells(Dmo) / cells.num_mems
 
                 else:
                     Dm = 0.0
@@ -619,16 +619,16 @@ def ghk_calculator(sim, cells, p):
 
                 if p.is_ecm is True:
                     # average entities from membranes to the cell centres:
-                    conc_env = np.dot(cells.M_sum_mems,
+                    conc_env = cells.convert_mems_to_cells(
                                       sim.cc_env[ion_i][cells.map_mem2ecm]) / cells.num_mems
 
                 else:
 
-                    conc_env = np.dot(cells.M_sum_mems, sim.cc_env[ion_i]) / cells.num_mems
+                    conc_env = cells.convert_mems_to_cells(sim.cc_env[ion_i]) / cells.num_mems
 
                 if obj.channel_core.DChan is not None:
                     Dmo = obj.channel_core.DChan * relP
-                    Dm = np.dot(cells.M_sum_mems, Dmo) / cells.num_mems
+                    Dm = cells.convert_mems_to_cells(Dmo) / cells.num_mems
 
                 else:
                     Dm = 0.0
@@ -935,7 +935,6 @@ def molecule_mover(sim, cX_env_o, cX_cells, cells, p, z=0, Dm=1.0e-18, Do=1.0e-9
 
     """
 
-
     if p.is_ecm is True:
 
         cX_env = cX_env_o[cells.map_mem2ecm]
@@ -987,7 +986,7 @@ def molecule_mover(sim, cX_env_o, cX_cells, cells, p, z=0, Dm=1.0e-18, Do=1.0e-9
         # enforce zero flux at outer boundary:
         fgj_X[cells.bflags_mems] = 0.0
 
-        delta_cco = np.dot(cells.M_sum_mems, -fgj_X * cells.mem_sa) / cells.cell_vol
+        delta_cco = cells.convert_mems_to_cells(-fgj_X * cells.mem_sa) / cells.cell_vol
 
         # Calculate the final concentration change (the acceleration effectively speeds up time):
         if update_intra is False: # do the GJ transfer assuming instant mixing in the cell:
@@ -1050,7 +1049,7 @@ def molecule_mover(sim, cX_env_o, cX_cells, cells, p, z=0, Dm=1.0e-18, Do=1.0e-9
 
         flux_mtn[cells.bflags_mems] = 0.0
 
-        div_ccmt = -np.dot(cells.M_sum_mems, flux_mtn*cells.mem_sa)/cells.cell_vol
+        div_ccmt = -cells.convert_mems_to_cells(flux_mtn*cells.mem_sa)/cells.cell_vol
 
         # update cell concentration:
         cX_cells += div_ccmt*p.dt*time_dilation_factor
@@ -1174,7 +1173,9 @@ def update_Co(sim, cX_cell, cX_mem, cX_env, flux, cells, p, ignoreECM = True, up
     """
 
     # take the divergence of the flux for each enclosed cell:
-    delta_cells = np.dot(cells.M_sum_mems, flux * cells.mem_sa) / cells.cell_vol
+    if (flux == 0).all():
+        return cX_cell, cX_mem, cX_env
+    delta_cells = cells.convert_mems_to_cells(flux * cells.mem_sa) / cells.cell_vol
 
     # update cell concentration of substance:
     if update_at_mems is False: # treat cell mem and centre values as equal

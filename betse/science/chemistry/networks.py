@@ -1107,7 +1107,13 @@ class MasterOfNetworks(object):
                                                                     max_activators = max_a, max_inhibitors = max_i)
 
 
-            obj.alpha_eval_string = "(" + all_alpha + ")"
+            alpha_eval_string = "(" + all_alpha + ")"
+            source = """def alpha_eval(self, sim, cells, p):
+    return %s
+""" % alpha_eval_string
+            d = {}
+            exec(source, globals(), d)
+            obj.alpha_eval = d['alpha_eval']
 
     def read_modulators(self, config_modulators, sim, cells, p):
 
@@ -1178,6 +1184,7 @@ class MasterOfNetworks(object):
                 zone_tags_i=zone_i, in_mem_tag=False,
             )
 
+            XXX
             obj.alpha_eval_string = "(" + all_alpha + ")"
 
         for name in self.modulators:
@@ -3229,9 +3236,6 @@ class MasterOfNetworks(object):
         cells = phase.cells
         p = phase.p
 
-        globalo = globals()
-        localo = locals()
-
         # get the object corresponding to the specific channel:
         for i, name in enumerate(self.channels):
 
@@ -3247,7 +3251,7 @@ class MasterOfNetworks(object):
 
                 # compute the channel activity
                 # calculate the value of the channel modulation constant:
-                moddy = eval(chan.alpha_eval_string, globalo, localo)
+                moddy = chan.alpha_eval(self, sim, cells, p)
 
                 # set the modulator state in the channel core
                 chan.channel_core.modulator = moddy

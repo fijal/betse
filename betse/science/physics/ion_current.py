@@ -28,7 +28,7 @@ def get_current(sim, cells, p) -> None:
     sim.Jn = sim.Jmem + sim.Jgj
 
     # average the transmembrane current to the cell centre (for smoothing):
-    Jn_ave = np.dot(cells.M_sum_mems, sim.Jn*cells.mem_sa) / cells.cell_sa
+    Jn_ave = cells.convert_mems_to_cells(sim.Jn*cells.mem_sa) / cells.cell_sa
     # Smooth the free current at the membrane:
     sim.Jn = sim.smooth_weight_mem * sim.Jn + Jn_ave[cells.mem_to_cells] * sim.smooth_weight_o
 
@@ -40,8 +40,8 @@ def get_current(sim, cells, p) -> None:
     Jcy = sim.Jn * cells.mem_vects_flat[:,3]
 
     # average intracellular current to cell centres
-    sim.J_cell_x = np.dot(cells.M_sum_mems, Jcx*cells.mem_sa) / cells.cell_sa
-    sim.J_cell_y = np.dot(cells.M_sum_mems, Jcy*cells.mem_sa) / cells.cell_sa
+    sim.J_cell_x = cells.convert_mems_to_cells(Jcx*cells.mem_sa) / cells.cell_sa
+    sim.J_cell_y = cells.convert_mems_to_cells(Jcy*cells.mem_sa) / cells.cell_sa
 
     # normal component of J_cell at the membranes:
     sim.Jc = sim.J_cell_x[cells.mem_to_cells]*cells.mem_vects_flat[:,2] + sim.J_cell_y[cells.mem_to_cells]*cells.mem_vects_flat[:,3]
