@@ -403,7 +403,7 @@ class Cells(object):
         """
         mx = np.sum(grid, axis=1).max()
         if mx <= 20:
-            return mx
+            return int(mx)
         return -1
 
     def convert_mems_to_cells(self, mems):
@@ -413,11 +413,12 @@ class Cells(object):
         return np.dot(self._M_sum_mems_inv, cells)
 
     def __setstate__(self, state):
-        M_sum_mems = state.pop('M_sum_mems')
-        M_sum_mems_inv = state.pop('M_sum_mems_inv')
+        M_sum_mems = state.pop('M_sum_mems', None)
+        M_sum_mems_inv = state.pop('M_sum_mems_inv', None)
         self.__dict__.update(state)
 
-        self.setup_converters(M_sum_mems, M_sum_mems_inv)
+        if M_sum_mems is not None:
+            self.setup_converters(M_sum_mems, M_sum_mems_inv)
 
     def setup_converters(self, M_sum_mems, M_sum_mems_inv):
         max_no = self.check_contiguous_grid(M_sum_mems)
@@ -439,9 +440,8 @@ class Cells(object):
 
             self.convert_mems_to_cells = convert_mems_to_cells
             self.convert_cells_to_mems = convert_cells_to_mems
-        else:
-            self._M_sum_mems = M_sum_mems
-            self._M_sum_mems_inv = M_sum_mems_inv
+        self._M_sum_mems = M_sum_mems
+        self._M_sum_mems_inv = M_sum_mems_inv
 
     # ..................{ MAKERS                            }..................
     MAKE_WORLD_PROGRESS_TOTAL = 5

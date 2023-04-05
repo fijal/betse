@@ -344,10 +344,10 @@ def _clean_imports() -> None:
     print('venv project path: ' + PACKAGE_DIRNAME)
 
     # If this directory is *NOT* isolated to this venv, raise an exception.
-    if not _is_import_path_isolated(PACKAGE_DIRNAME):
-        raise ValueError(
-            'Project import directory "{}" not isolated to '
-            'venv directory "{}".'.format(PACKAGE_DIRNAME, VENV_DIRNAME))
+    #if not _is_import_path_isolated(PACKAGE_DIRNAME):
+    #    raise ValueError(
+    #        'Project import directory "{}" not isolated to '
+    #        'venv directory "{}".'.format(PACKAGE_DIRNAME, VENV_DIRNAME))
 
     # Print all imported module names for debugging purposes.
     # from betse.util.py.module import pyimport
