@@ -396,27 +396,15 @@ class Cells(object):
 
     def check_contiguous_grid(self, grid):
         """ This returns True, but should check if each row in M_mem_sums
-        is a list of 0s, then list of 1s, then list of 0s
+        is a small list of 1s and other than that just filled with zeros.
+        It's not clear at which point this approach stops yielding results,
+        for now it's limited to 20. It can probably both be much larger than
+        that and never is
         """
-        return 6
-        # XXX the logic below is broken, write it down
-        for x in range(grid.shape[0]):
-            y = 0
-            while grid[x, y] == 0:
-                y += 1
-                if y == grid.shape[1]:
-                    return -1
-            c = 0
-            while grid[x, y] == 1:
-                y += 1
-                c += 1
-                if y == grid.shape[1]:
-                    return c
-            while grid[x, y] == 0:
-                y += 1
-                if y == grid.shape[1]:
-                    return c                
-            return -1
+        mx = np.sum(grid, axis=1).max()
+        if mx <= 20:
+            return mx
+        return -1
 
     def convert_mems_to_cells(self, mems):
         return np.dot(self._M_sum_mems, mems)
