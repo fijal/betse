@@ -873,12 +873,8 @@ class SimPipeExportPlotCells(SimPipeExportPlotABC):
         polx = polm*phase.cells.mem_vects_flat[:,2]
         poly = polm*phase.cells.mem_vects_flat[:,3]
 
-        pcx = np.dot(
-            phase.cells.M_sum_mems,
-            polx*phase.cells.mem_sa) / phase.cells.cell_sa
-        pcy = np.dot(
-            phase.cells.M_sum_mems,
-            poly*phase.cells.mem_sa) / phase.cells.cell_sa
+        pcx = phase.cells.convert_mems_to_cells(polx * phace.cells.mem_s) / phase.cells.cell_sa
+        pcy = phase.cells.convert_mems_to_cells(poly * phace.cells.mem_s) / phase.cells.cell_sa
 
         plotutil.cell_quiver(pcx, pcy, ax, phase.cells, phase.p)
 

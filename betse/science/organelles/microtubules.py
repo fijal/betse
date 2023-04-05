@@ -81,8 +81,8 @@ class Mtubes(object):
         self.mtubes_y = cells.mem_vects_flat[:,3]*self.mt_density
 
         # microtubule density function initialized:
-        mtdx = np.dot(cells.M_sum_mems, self.mtubes_x*cells.mem_sa) / cells.cell_sa
-        mtdy = np.dot(cells.M_sum_mems, self.mtubes_y*cells.mem_sa) / cells.cell_sa
+        mtdx = cells.convert_mems_to_cells(self.mtubes_x*cells.mem_sa) / cells.cell_sa
+        mtdy = cells.convert_mems_to_cells(self.mtubes_y*cells.mem_sa) / cells.cell_sa
 
         self.mtdf = ((mtdx[cells.mem_to_cells]*cells.mem_vects_flat[:,2] +
                                          mtdy[cells.mem_to_cells]*cells.mem_vects_flat[:,3]))
@@ -278,8 +278,8 @@ class Mtubes(object):
         # uxmt = (np.dot(cells.M_sum_mems, uxmto*cells.mem_sa)/cells.cell_sa)
         # uymt = (np.dot(cells.M_sum_mems, uymto*cells.mem_sa)/cells.cell_sa)
 
-        uxmt = (np.dot(cells.M_sum_mems, uxmto)/cells.num_mems)
-        uymt = (np.dot(cells.M_sum_mems, uymto)/cells.num_mems)
+        uxmt = (cells.convert_mems_to_cells(uxmto)/cells.num_mems)
+        uymt = (cells.convert_mems_to_cells(uymto)/cells.num_mems)
 
         # average the mtube field to the centre of pie-shaped midpoints of each individual cell:
         # uxmti = (uxmt[cells.mem_to_cells] + uxmto)/2

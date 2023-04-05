@@ -2151,8 +2151,8 @@ class MasterOfNetworks(object):
 
                 vmem_tex = "V_{mem}"
 
-                in_delta_term_react = "(np.dot(cells.M_sum_mems, -self.transporters['{}'].flux*cells.mem_sa)/cells.cell_vol)".format(transp_name)
-                in_delta_term_prod = "(np.dot(cells.M_sum_mems, self.transporters['{}'].flux*cells.mem_sa)/cells.cell_vol)".format(transp_name)
+                in_delta_term_react = "(cells.convert_mems_to_cells(-self.transporters['{}'].flux*cells.mem_sa)/cells.cell_vol)".format(transp_name)
+                in_delta_term_prod = "(cells.convert_mems_to_cells(self.transporters['{}'].flux*cells.mem_sa)/cells.cell_vol)".format(transp_name)
 
                 if p.is_ecm is True:
 
@@ -2161,9 +2161,9 @@ class MasterOfNetworks(object):
                     out_delta_term_prod = "stb.div_env(self.transporters['{}'].flux, cells, p)".format(transp_name)
 
                 else:
-                    out_delta_term_react = "(np.dot(cells.M_sum_mems, -self.transporters['{}'].flux*cells.mem_sa)/cells.cell_vol)".format(transp_name)
+                    out_delta_term_react = "(cells.convert_mems_to_cells(-self.transporters['{}'].flux*cells.mem_sa)/cells.cell_vol)".format(transp_name)
 
-                    out_delta_term_prod = "(np.dot(cells.M_sum_mems, self.transporters['{}'].flux*cells.mem_sa)/cells.cell_vol)".format(transp_name)
+                    out_delta_term_prod = "(cells.convert_mems_to_cells(self.transporters['{}'].flux*cells.mem_sa)/cells.cell_vol)".format(transp_name)
 
                 all_alpha, alpha_tex, trans_tex_var_list = self.get_influencers(a_list, Km_a_list,
                                                                 n_a_list, i_list,
@@ -3995,7 +3995,7 @@ class MasterOfNetworks(object):
         for ind, mol in self.molecules.items():
             self.rho_at_mem += mol.z*p.F*mol.cc_at_mem*cells.diviterm[cells.mem_to_cells]
 
-        self.rho_cells = np.dot(cells.M_sum_mems, self.rho_at_mem)/cells.num_mems
+        self.rho_cells = cells.convert_mems_to_cells(self.rho_at_mem) / cells.num_mems
 
 
     def energy_charge(self, sim):
@@ -6115,7 +6115,7 @@ class Molecule(object):
                 for obj_cenv in self.c_env_time]
         else:
             cenv = [
-                np.dot(cells.M_sum_mems, obj_cenv) / cells.num_mems
+                cells.convert_mems_to_cells(obj_cenv) / cells.num_mems
                 for obj_cenv in self.c_env_time]
 
         headr = headr + 'Env_Conc_' + self.name + '_mmol/L' + ','

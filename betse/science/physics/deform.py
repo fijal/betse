@@ -41,8 +41,8 @@ def getDeformation(sim, cells, t, p):
     gPx = -gPP*cells.nn_tx
     gPy = -gPP*cells.nn_ty
 
-    sim.gPxc = np.dot(cells.M_sum_mems, gPx) / cells.num_mems
-    sim.gPyc = np.dot(cells.M_sum_mems, gPy) / cells.num_mems
+    sim.gPxc = cells.convert_mems_to_cells(gPx) / cells.num_mems
+    sim.gPyc = cells.convert_mems_to_cells(gPy) / cells.num_mems
 
     # deformation by "galvanotropic" mechanism (electrostrictive forces
     # influenced by biology, e.g. cytoskeletal).
@@ -69,8 +69,8 @@ def getDeformation(sim, cells, t, p):
         dx = -gPP * cells.nn_tx
         dy = -gPP * cells.nn_ty
 
-        dxco = np.dot(cells.M_sum_mems, dx) / cells.num_mems
-        dyco = np.dot(cells.M_sum_mems, dy) / cells.num_mems
+        dxco = cells.convert_mems_to_cells(dx) / cells.num_mems
+        dyco = cells.convert_mems_to_cells(dy) / cells.num_mems
 
         # _, dxc, dyc, _, _, _ = cells.HH_cells(dxco, dyco, rot_only=True,
         #                                                           bounds_closed=p.fixed_cluster_bound)
@@ -134,8 +134,8 @@ def timeDeform(sim, cells, t, p):
     gPx = -gPP * cells.nn_tx
     gPy = -gPP * cells.nn_ty
 
-    sim.gPxc = np.dot(cells.M_sum_mems, gPx) / cells.num_mems
-    sim.gPyc = np.dot(cells.M_sum_mems, gPy) / cells.num_mems
+    sim.gPxc = cells.convert_mems_to_cells(gPx) / cells.num_mems
+    sim.gPyc = cells.convert_mems_to_cells(gPy) / cells.num_mems
 
     # deformation by "galvanotropic" mechanism (electrostrictive forces influenced by biology, e.g. cytoskeletal):
     F_cell_x = (1 / p.lame_mu) * ( (1/sim.sigma) * sim.J_cell_x * sim.rho_cells * p.galvanotropism + sim.gPxc)
@@ -265,8 +265,8 @@ def implement_deform_timestep(sim, cells, t, p):
     yv2 = cells.mem_verts[:, 1] + dyv
 
     # calculate new cell centres:
-    cell_cent_x = np.dot(cells.M_sum_mems, xv2*cells.mem_sa)/cells.cell_sa
-    cell_cent_y = np.dot(cells.M_sum_mems, yv2*cells.mem_sa)/cells.cell_sa
+    cell_cent_x = cells.convert_mems_to_cells(xv2*cells.mem_sa)/cells.cell_sa
+    cell_cent_y = cells.convert_mems_to_cells(yv2*cells.mem_sa)/cells.cell_sa
 
     # smooth the vertices:
     # xv2 = sim.smooth_weight_mem*xv2 + cell_cent_x[cells.mem_to_cells]*sim.smooth_weight_o

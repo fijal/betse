@@ -1940,7 +1940,7 @@ class Cells(object):
         self.lapGJ = np.dot(L2, L1)
 
         # weighting function for the voronoi lattice:
-        self.geom_weight = np.dot(self.M_sum_mems, self.mem_sa / self.mem_vol) * p.cell_height
+        self.geom_weight = self.convert_mems_to_cells(self.mem_sa / self.mem_vol) * p.cell_height
 
     def cellDivM(self, p):
 
@@ -2396,8 +2396,8 @@ class Cells(object):
         Takes vector quantity (Smx, Smy) defined at membranes and calculates the averaged
         single vector at the cell centre.
         """
-        Scx = np.dot(self.M_sum_mems, Smx * self.mem_sa) / self.cell_sa
-        Scy = np.dot(self.M_sum_mems, Smy * self.mem_sa) / self.cell_sa
+        Scx = self.convert_mems_to_cells(Smx * self.mem_sa) / self.cell_sa
+        Scy = self.convert_mems_to_cells(Smy * self.mem_sa) / self.cell_sa
 
         return Scx, Scy
 
@@ -2490,7 +2490,7 @@ class Cells(object):
         fmemi = (fmem[self.nn_i] + fmem[self.mem_i])/2
 
         # average the values at the cell centre point:
-        fcent = (1/2)*(f + (np.dot(self.M_sum_mems, fmemi)/self.num_mems))
+        fcent = (1/2)*(f + (self.convert_mems_to_cells(fmemi)/self.num_mems))
 
         return fcent, fmemi
 
@@ -2523,7 +2523,7 @@ class Cells(object):
 
             curlF_o = dFy_dx - dFx_dy
 
-            curl_z = np.dot(self.M_sum_mems,curlF_o)/self.num_mems
+            curl_z = self.convert_mems_to_cells(curlF_o)/self.num_mems
 
             curl_x = 0
             curl_y = 0
@@ -2538,8 +2538,8 @@ class Cells(object):
             curl_phi_x_o = dphi_dy_o
             curl_phi_y_o = -dphi_dx_o
 
-            curl_x = np.dot(self.M_sum_mems,curl_phi_x_o)/self.num_mems
-            curl_y = np.dot(self.M_sum_mems,curl_phi_y_o)/self.num_mems
+            curl_x = self.convert_mems_to_cells(curl_phi_x_o)/self.num_mems
+            curl_y = self.convert_mems_to_cells(curl_phi_y_o)/self.num_mems
 
             curl_z = 0
 
@@ -2571,7 +2571,7 @@ class Cells(object):
         """
 
         # calculate divergence as the sum of this vector x each surface area, divided by cell volume:
-        div_F = (np.dot(self.M_sum_mems, Fn * self.mem_sa) / self.cell_vol)
+        div_F = (self.convert_mems_to_cells(Fn * self.mem_sa) / self.cell_vol)
 
         fxo = Fn*self.nn_tx
         fyo = Fn*self.nn_ty
@@ -2591,8 +2591,8 @@ class Cells(object):
 
 
         # calculate the net displacement of cell centres under the applied force under incompressible conditions:
-        F_cell_x = np.dot(self.M_sum_mems, Fx) / self.num_mems
-        F_cell_y = np.dot(self.M_sum_mems, Fy) / self.num_mems
+        F_cell_x = self.convert_mems_to_cells(Fx) / self.num_mems
+        F_cell_y = self.convert_mems_to_cells(Fy) / self.num_mems
 
         return Fn, F_cell_x, F_cell_y
 
@@ -2641,7 +2641,7 @@ class Cells(object):
 
             Fn = Fxm * nx + Fym * ny
 
-            divF = np.dot(self.M_sum_mems, Fn * self.mem_sa) / self.cell_vol
+            divF = self.convert_mems_to_cells(Fn * self.mem_sa) / self.cell_vol
 
             BB = np.dot(self.lapGJinv, divF)
 
@@ -2650,8 +2650,8 @@ class Cells(object):
             Bxm = gBB * nx
             Bym = gBB * ny
 
-            Bx = np.dot(self.M_sum_mems, Bxm) / self.num_mems
-            By = np.dot(self.M_sum_mems, Bym) / self.num_mems
+            Bx = self.convert_mems_to_cells(Bxm) / self.num_mems
+            By = self.convert_mems_to_cells(Bym) / self.num_mems
 
         else:
             BB = 0
@@ -2785,7 +2785,7 @@ class Cells(object):
         #   "num_mems" is a row vector of length m whose elements are the
         #   number of membranes in that cell, each column of this transpose is
         #   divided by the corresponding element of this row vector.
-        return self.M_sum_mems.T / self.num_mems
+        return self._M_sum_mems.T / self.num_mems
 
     # ..........{ MAPPERS                                }.....................
     #FIXME: To reduce code duplication:

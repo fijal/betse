@@ -1018,8 +1018,8 @@ def cell_quiver(datax, datay, ax, cells, p):
     """
 
     if len(datax) == len(cells.mem_i):
-        Fx = np.dot(cells.M_sum_mems,datax)/cells.num_mems
-        Fy = np.dot(cells.M_sum_mems,datay)/cells.num_mems
+        Fx = cells.convert_mems_to_cells(datax)/cells.num_mems
+        Fy = cells.convert_mems_to_cells(datay)/cells.num_mems
     else:
         Fx = datax
         Fy = datay

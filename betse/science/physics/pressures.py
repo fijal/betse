@@ -37,7 +37,7 @@ def osmotic_P(sim, cells, p):
 
     if p.is_ecm is False:
 
-        op_env = np.dot(cells.M_sum_mems, sim.osmo_P_env)/cells.num_mems
+        op_env = cells.convert_mems_to_cells(sim.osmo_P_env)/cells.num_mems
 
         sim.osmo_P_delta = op_env - sim.osmo_P_cell
 

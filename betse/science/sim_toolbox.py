@@ -1356,8 +1356,8 @@ def map_to_cells(Fx, Fy, cells, p, smoothing=1.0):
     Fmem = (Fx_atmem * cells.mem_vects_flat[:, 2] +
             Fy_atmem * cells.mem_vects_flat[:, 3])
 
-    Fx_atcell = (np.dot(cells.M_sum_mems, Fx_atmem * cells.mem_sa) / cells.cell_sa)
-    Fy_atcell = (np.dot(cells.M_sum_mems, Fy_atmem * cells.mem_sa) / cells.cell_sa)
+    Fx_atcell = (cells.convert_mems_to_cells(Fx_atmem * cells.mem_sa) / cells.cell_sa)
+    Fy_atcell = (cells.convert_mems_to_cells(Fy_atmem * cells.mem_sa) / cells.cell_sa)
 
     return Fx_atcell, Fy_atcell, Fmem
 

@@ -98,7 +98,7 @@ class WernerSim(object):
         fluxA[cells.bflags_mems] = 0.0
 
         # take the divergence of the flux to obtain the net change with time:
-        div_fluxA = np.dot(cells.M_sum_mems, -fluxA * cells.mem_sa) / cells.cell_vol
+        div_fluxA = cells.convert_mems_to_cells(-fluxA * cells.mem_sa) / cells.cell_vol
 
         # calculate the change with time for the full reaction-diffusion expression:
         dAt = alpha_A * termAB - beta_A * cA + div_fluxA
@@ -126,7 +126,7 @@ class WernerSim(object):
         fluxB[cells.bflags_mems] = 0.0
 
         # take the divergence of the flux to obtain the net change with time:
-        div_fluxB = np.dot(cells.M_sum_mems, -fluxB * cells.mem_sa) / cells.cell_vol
+        div_fluxB = cells.convert_mems_to_cells(-fluxB * cells.mem_sa) / cells.cell_vol
 
         # calculate the change with time for the full reaction-diffusion expression:
         dBt = alpha_B * termAB - beta_B * cB + div_fluxB
@@ -148,7 +148,7 @@ class WernerSim(object):
         fluxE[cells.bflags_mems] = 0.0
 
         # take the divergence of the flux to obtain the net change with time:
-        div_fluxE = np.dot(cells.M_sum_mems, -fluxE * cells.mem_sa) / cells.cell_vol
+        div_fluxE = cells.convert_mems_to_cells(-fluxE * cells.mem_sa) / cells.cell_vol
 
         # calculate the change with time for the full reaction-diffusion expression:
         dEt = alpha_E - k_E * cB * cE + div_fluxE
