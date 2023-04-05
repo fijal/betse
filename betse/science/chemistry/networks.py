@@ -1114,6 +1114,7 @@ class MasterOfNetworks(object):
             d = {}
             exec(source, globals(), d)
             obj.alpha_eval = d['alpha_eval']
+            obj.alpha_eval_string = alpha_eval_string
 
     def read_modulators(self, config_modulators, sim, cells, p):
 
